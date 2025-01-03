@@ -1,5 +1,5 @@
 import os
-import imp
+import importlib.util
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
@@ -67,5 +67,11 @@ class Render:
         return template.render(hosts=hosts, **vars)
 
     def _render_py(self, hosts, vars={}):
-        module = imp.load_source('r', self.tpl_file)
+        # not supported in python3.12
+        #module = imp.load_source('r', self.tpl_file)
+        # REPLACEMENT BEG
+        spec = importlib.util.spec_from_file_location('r',self.tpl_file)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        # REPLACEMENT END
         return module.render(hosts, vars=vars, tpl_dirs=self.tpl_dirs)
